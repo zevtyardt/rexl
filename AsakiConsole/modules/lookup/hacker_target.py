@@ -1,0 +1,99 @@
+from lib.decorators import with_argparser
+
+import requests
+import argparse
+import re
+
+class HackerTargetApi(object):
+    def _bind_api(self, endpoint: str, query: str) -> requests.Response:
+        response = requests.get(
+            "https://api.hackertarget.com/%s?q=%s" % (endpoint, query))
+        self.poutput(re.sub(r"<.+?>", "", response.text))
+
+    QueryParser = argparse.ArgumentParser()
+    QueryParser.add_argument("query", help="Query string")
+
+    @with_argparser(QueryParser)
+    def do_traceroute__api__hackertarget(self, param):
+        """using mtr an advanced traceroute tool trace the path of an Internet connection"""
+        self._bind_api("mtr", param.query)
+
+    @with_argparser(QueryParser)
+    def do_ping__api__hackertarget(self, param):
+        """testing connectivity to a host, perform a ping from our server"""
+        self._bind_api("nping", param.query)
+
+    @with_argparser(QueryParser)
+    def do_dnslookup__api__hackertarget(self, param):
+        """Find DNS records for a domain, results are determined using the dig DNS tool"""
+        self._bind_api("dnslookup", param.query)
+
+    @with_argparser(QueryParser)
+    def do_hostsearch__api__hackertarget(self, param):
+        """Find forward DNS (A) records for a domain"""
+        self._bind_api("hostsearch", param.query)
+
+    @with_argparser(QueryParser)
+    def do_reversedns__api__hackertarget(self, param):
+        """Find Reverse DNS records for an IP address or a range of IP addresses"""
+        self._bind_api("reversedns", param.query)
+
+    @with_argparser(QueryParser)
+    def do_findshareddns__api__hackertarget(self, param):
+        """Find hosts sharing DNS servers"""
+        self._bind_api("findshareddns", param.query)
+
+    @with_argparser(QueryParser)
+    def do_zonetransfer__api__hackertarget(self, param):
+        """Online Test of a zone transfer that will attempt to get all DNS records for a target domain"""
+        self._bind_api("zonetransfer", param.query)
+
+    @with_argparser(QueryParser)
+    def do_whois__api__hackertarget(self, param):
+        """Determine the registered owner of a domain or IP address block with the whois tool."""
+        self._bind_api("whois", param.query)
+
+    @with_argparser(QueryParser)
+    def do_geoip__api__hackertarget(self, param):
+        """Find the location of an IP address using the GeoIP lookup location tool."""
+        self._bind_api("geoip", param.query)
+
+    @with_argparser(QueryParser)
+    def do_reverse_ip__api__hackertarget(self, param):
+        """Discover web hosts sharing an IP address with a reverse IP lookup."""
+        self._bind_api("reverseiolookup", param.query)
+
+    @with_argparser(QueryParser)
+    def do_tcp_port__api__hackertarget(self, param):
+        """Determine the status of an Internet facing service or firewall"""
+        self._bind_api("nmap", param.query)
+
+    @with_argparser(QueryParser)
+    def do_udp_port__api__hackertarget(self, param):
+        """Online UDP port scan available for common UDP services"""
+        self._bind_api("nmap", param.query)
+
+    @with_argparser(QueryParser)
+    def do_subnet__api__hackertarget(self, param):
+        """Determine the properties of a network subnet"""
+        self._bind_api("subnetcalc", param.query)
+
+    @with_argparser(QueryParser)
+    def do_http_headers__api__hackertarget(self, param):
+        """View HTTP Headers of a web site. The HTTP Headers reveal system and web application details."""
+        self._bind_api("httpheaders", param.query)
+
+    @with_argparser(QueryParser)
+    def do_pagelinks__api__hackertarget(self, param):
+        """Dump all the links from a web page."""
+        self._bind_api("pagelinks", param.query)
+
+    @with_argparser(QueryParser)
+    def do_aslookup__api__hackertarget(self, param):
+        """Get Autonomous System Number or ASN details from an AS or an IP address."""
+        self._bind_api("aslookup", param.query)
+
+    @with_argparser(QueryParser)
+    def do_bannerlookup__api__hackertarget(self, param):
+        """Discover network services by querying the service port."""
+        self._bind_api("bannerlookup", param.query)
