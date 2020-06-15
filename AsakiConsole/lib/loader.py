@@ -1,11 +1,10 @@
 import sys
 import os
 
-from lib.constants import APP_VERSION
-alternative_app_name = os.path.basename(sys.argv[0])
+from lib.constants import APP_VERSION, APP_NAME
 
 separator = '-' * 40
-awesome_intro = f"""{alternative_app_name} {APP_VERSION}
+awesome_intro = f"""{APP_NAME} framework {APP_VERSION}
 
 {separator}
 {{}} modules loaded. in total there are {{}} commands and {{}} auxilaries.
@@ -20,7 +19,7 @@ def loading():
 
     chars = itertools.cycle(r"\|/-")
     while run:
-        sys.stdout.write(f"\x1b[K[{next(chars)}] starting {alternative_app_name} framework at {time.strftime('%c')}\r")
+        sys.stdout.write(f"\x1b[K[{next(chars)}] starting {APP_NAME} framework at {time.strftime('%c')}\r")
         time.sleep(0.2)
     sys.stdout.write("\x1b[K")
 
@@ -31,12 +30,14 @@ th.start()
 
 # importing module
 from lib.core import CustomCmd
-from typing import Union, Optional
 
 from modules.social_media.fbgraph import FacebookGraph
-from modules.lookup.hacker_target import HackerTargetApi
+from modules.lookup import Lookup
 from modules.auxilary import Auxilary
 from modules.searchengine import url_crawler
+
+class MainModule(CustomCmd, FacebookGraph, Lookup, Auxilary, url_crawler):
+    pass
 
 run = False
 th.join()

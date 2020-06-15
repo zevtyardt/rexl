@@ -190,6 +190,10 @@ class CustomCmd(cmd2.Cmd):
         new_prompt += "%s " % suffix
         self.async_update_prompt(new_prompt)
 
+    def pinfo(self, msg: str = "", **kwargs) -> None:
+        prefix = self.style("[+] ", fg=self.fg.green)
+        super().poutput(prefix + msg, **kwargs)
+
     def default(self, statement: Statement) -> Optional[bool]:
         """Executed when the command given isn't a recognized command implemented by a do_* method.
 

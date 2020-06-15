@@ -1,5 +1,5 @@
 # About Aplication [default]
-APP_NAME = "thesocialnetwork"
+APP_NAME = "asaki"
 APP_VERSION = "8.5.20"
 
 # About me

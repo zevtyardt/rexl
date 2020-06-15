@@ -2,10 +2,9 @@ import sys
 import os
 
 sys.path.insert(0, os.path.dirname(__file__))
-from lib.loader import *
+from lib.loader import MainModule, awesome_intro
 
-class Asaki(CustomCmd, FacebookGraph, HackerTargetApi,
-            Auxilary, url_crawler):
+class Asaki(MainModule):
     def __init__(self):
         super().__init__()
         self.prompt = "sk"
