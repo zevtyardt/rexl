@@ -15,8 +15,14 @@ from cmd2.parsing import Statement
 from argparse import Namespace as ns
 from typing import Union, Optional
 from colorama.ansi import clear_screen
-from . import constants
 
+try:
+    from . import constants
+except ModuleNotFound:
+    class constants:
+        APP_NAME = "default"
+        APP_VERSION = "0.0.0"
+        AUTHOR_USERNAME = "zevtyardt"
 
 class CustomCmd(cmd2.Cmd):
     def __init__(self, msf_style: bool = False):
