@@ -4,6 +4,7 @@ import random
 import textwrap
 import tabulate
 import shutil
+import inquirer
 import os
 import argparse
 
@@ -15,6 +16,7 @@ from argparse import Namespace as ns
 from typing import Union, Optional
 from colorama.ansi import clear_screen
 from . import constants
+
 
 class CustomCmd(cmd2.Cmd):
     def __init__(self, msf_style: bool = False):
@@ -51,7 +53,8 @@ class CustomCmd(cmd2.Cmd):
         self._total_commands = 0
         self._auxilary = set()
 
-        self._category_pattern = re.compile(r"^(?P<command>.+?)__(?P<category>.+?)(?:__(?P<subcategory>.+?))?$")
+        self._category_pattern = re.compile(
+            r"^(?P<command>.+?)__(?P<category>.+?)(?:__(?P<subcategory>.+?))?$")
         self._max_lenght = 0
         self.register_custom_commands()
         self.reset_module()
@@ -80,7 +83,8 @@ class CustomCmd(cmd2.Cmd):
                 key = data.category
                 subcategory = data.subcategory
                 if subcategory:
-                    subcategory = self.module_delimeter.join(subcategory.split("__"))
+                    subcategory = self.module_delimeter.join(
+                        subcategory.split("__"))
                     key += (self.module_delimeter + subcategory)
                 if not self.modules.get(key):
                     self.modules[key] = []
@@ -102,7 +106,8 @@ class CustomCmd(cmd2.Cmd):
                     module = self.module_delimeter.join(module)
                     if not self.modules.get(module):
                         self.modules[module] = []
-                    self.modules[module].insert(0, (raw if not recmd else data.command, raw))
+                    self.modules[module].insert(
+                        0, (raw if not recmd else data.command, raw))
         self._auxilary = len(self._auxilary)
         self._max_lenght += 4
 
@@ -110,7 +115,7 @@ class CustomCmd(cmd2.Cmd):
         for module, items in self.modules.items():
             self._disable_commands(i[1] for i in items)
 
-    def use_module(self, modules: Union[list, str]="") -> None:
+    def use_module(self, modules: Union[list, str] = "") -> None:
         if isinstance(modules, str):
             modules = [modules]
         self.reset_module()
@@ -124,19 +129,21 @@ class CustomCmd(cmd2.Cmd):
             self.enable_command(command)
 
     def _disable_commands(self, commands: Union[list, iter],
-                          reason: str="You must be connected to use this command") -> None:
+                          reason: str = "You must be connected to use this command") -> None:
         for command in commands:
             self.disable_command(command, reason)
 
     def _add_settable(self, name, val_type, description, **kwargs) -> None:
-        settable_object = Settable(name=name, val_type=val_type, description=description, **kwargs)
+        settable_object = Settable(
+            name=name, val_type=val_type, description=description, **kwargs)
         assert not hasattr(self, name)
         setattr(self, name, None)
         self.settables[settable_object.name] = settable_object
 
     def get_visible_commands(self) -> list:
         def todisplay_command(raw):
-            invalid = lambda x, force=False: x.replace("_", "-") if x in self.g_commands or force else x
+            def invalid(x, force=False): return x.replace(
+                "_", "-") if x in self.g_commands or force else x
             cmd = self._category_pattern.search(raw)
             if self.current_module != self._appname:
                 return invalid(cmd.group(1) if cmd else raw, force=True)
@@ -146,7 +153,7 @@ class CustomCmd(cmd2.Cmd):
         return commands
 
     def _convert_to_valid_command(self, command: str) -> str:
-        valid = lambda x: x.replace("-", "_")
+        def valid(x): return x.replace("-", "_")
         if self.current_module != self._appname:
             for v in self.modules.values():
                 for (alias, real_command) in v:
@@ -163,13 +170,15 @@ class CustomCmd(cmd2.Cmd):
         return data
 
     def _preloop_hook(self) -> None:
-        self.set_window_title("%s v%s - %s" % (self.prompt, self.__version__, self.__author__))
-        self.tp_prompt = self.prompt
+        self.set_window_title(
+            f"{self._appname} framework {self.__version__} - {self.__author__}")
+        self.orig_prompt = self.prompt
         self.update_prompt()
 
-    def update_prompt(self, prefix: str="", suffix: str=":", sorted: bool= False, msf_style: bool = False) -> None:
+    def update_prompt(self, prefix: str = "", suffix: str = ":", sorted: bool = False, msf_style: bool = False) -> None:
         self.poutput()
-        new_prompt = "%s%s" % (prefix, self.style(self.tp_prompt, underline=True))
+        new_prompt = "%s%s" % (prefix, self.style(
+            self.orig_prompt, underline=True))
         if self.current_module != self._appname:
             new_prompt += " "
             if sorted:
@@ -183,9 +192,10 @@ class CustomCmd(cmd2.Cmd):
                 s_module = self.current_module.split(self.module_delimeter, 1)
                 if len(s_module) == 1:
                     s_module.insert(0, "default")
-                new_prompt += "{}({})".format(s_module[0], self.style(s_module[1], fg=self.fg.bright_red))
+                new_prompt += f"{s_module[0]}({self.style(s_module[0], fg=self.fg.bright_red)})"
             else:
-                new_prompt += self.style(self.current_module, fg=self.fg.bright_green)
+                new_prompt += self.style(self.current_module,
+                                         fg=self.fg.bright_green)
 
         new_prompt += "%s " % suffix
         self.async_update_prompt(new_prompt)
@@ -230,7 +240,8 @@ class CustomCmd(cmd2.Cmd):
 
     UseParser = argparse.ArgumentParser(usage="use [-h] [-i] [module]")
     UseParser.add_argument("module", nargs="*", help="specific module to use")
-    UseParser.add_argument("-i", "--interactive", action="store_true", help="run interactive mode")
+    UseParser.add_argument("-i", "--interactive",
+                           action="store_true", help="run interactive mode")
 
     @with_argparser(UseParser)
     def do_use(self, params) -> None:
@@ -241,7 +252,12 @@ class CustomCmd(cmd2.Cmd):
 
         module_name = None
         if params.interactive:
-            module_name = self.select(self.modules.keys())
+            self.poutput()
+            questions = [
+                inquirer.List("module_name", message="select module",
+                              choices=self.modules.keys())
+            ]
+            module_name = inquirer.prompt(questions)["module_name"]
         elif params.module:
             module_name = params.module[0]
         else:
@@ -258,10 +274,11 @@ class CustomCmd(cmd2.Cmd):
     def complete_use(self, chars, raw, *args) -> list:
         """auto complete for 'use'"""
         raw_s = raw.strip().split()
-        list_modules = [i for i in self.modules.keys() if i.startswith(chars) or chars == ""]
+        list_modules = [i for i in self.modules.keys(
+        ) if i.startswith(chars) or chars == ""]
 
         if len(raw_s) > 1 and raw_s[-1] in self.modules.keys() and \
-        not any(i[len(chars)] == self.module_delimeter for i in list_modules):
+                not any(i[len(chars)] == self.module_delimeter for i in list_modules):
             return []
         return list_modules
 
@@ -273,7 +290,7 @@ class CustomCmd(cmd2.Cmd):
             self.update_prompt(prefix="\r")
 
     def _custom_help_format(self) -> str:
-        return "{{0:<{}}}{{1}}".format(self._max_lenght)
+        return f"{{0:<{self._max_lenght}}}{{1}}"
 
     def do_help(self, *args) -> None:
         """print this help message"""
@@ -283,8 +300,8 @@ class CustomCmd(cmd2.Cmd):
             data = self.modules[self.current_module]
             self._print_topics(data, title=self.current_module)
 
-    def _print_topics(self, data: Union[iter, list], title: str="options",
-                      indent: int=2) -> None:
+    def _print_topics(self, data: Union[iter, list], title: str = "options",
+                      indent: int = 2) -> None:
         if self.current_module == self._appname:
             prefix = ""
             self.poutput(self._cmdfmt.format("commands", "description"))
@@ -297,8 +314,8 @@ class CustomCmd(cmd2.Cmd):
         self.poutput("")
         for alias, command in data:
             self.poutput(prefix + self._cmdfmt.format(alias.replace("_", "-"),
-              self.get_doc(command, prefix))
-            )
+                                                      self.get_doc(command, prefix))
+                         )
         self.poutput()
 
     def get_doc(self, cmd: str, prefix: str):

@@ -1,10 +1,10 @@
 import sys
 import os
 
-from lib.constants import APP_VERSION, APP_NAME
+from lib.constants import APP_VERSION, APP_NAME, AUTHOR_USERNAME
 
 separator = '-' * 40
-awesome_intro = f"""{APP_NAME} framework {APP_VERSION}
+awesome_intro = f"""{APP_NAME} framework {APP_VERSION} {AUTHOR_USERNAME}
 
 {separator}
 {{}} modules loaded. in total there are {{}} commands and {{}} auxilaries.

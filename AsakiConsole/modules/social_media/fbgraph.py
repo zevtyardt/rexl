@@ -211,7 +211,7 @@ class FacebookGraph(FbGraphAPI):
 
 
     BooleanParser = argparse.ArgumentParser()
-    BooleanParser.add_argument("-s", dest="status", metavar="boolean", help="active or deactive shield, choice from {true, false}. default is true", choices={"true", "false"})
+    BooleanParser.add_argument("-s", dest="status", metavar="boolean", help="active or deactive shield, choice from {true, false}", default=True, choices={"true", "false"})
 
     @validate_facebook_access_token
     @with_argparser(BooleanParser)
