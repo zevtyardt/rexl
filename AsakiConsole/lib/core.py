@@ -27,7 +27,7 @@ except ModuleNotFound:
 class CustomCmd(cmd2.Cmd):
     def __init__(self, msf_style: bool = False):
         super().__init__()
-        self.default_error = "{!s} is not a recognized command!"
+        self.default_error = "{!r} is not a recognized command!"
         self.style = style
         self.fg = fg
 
@@ -39,8 +39,6 @@ class CustomCmd(cmd2.Cmd):
 
         self.register_preloop_hook(self._preloop_hook)
         self.register_precmd_hook(self._commands_completion_hook)
-        self.register_precmd_hook(self._precmd_hook)
-        self.register_postcmd_hook(self._postcmd_hook)
 
         self._appname = constants.APP_NAME
         self.prompt = self._appname
@@ -170,18 +168,6 @@ class CustomCmd(cmd2.Cmd):
         return valid(command)
 
     # hooks
-    def cmdwrapper_hook(self, data):
-        real_command = data.statement.command.replace("_", "-")
-        if real_command not in self.g_commands and data.statement.args and not any(i in data.statement.args for i in ("-h", "--help")):
-            self.poutput()
-        return data
-
-    def _precmd_hook(self, data: cmd2.plugin.PrecommandData) -> cmd2.plugin.PrecommandData:
-        return self.cmdwrapper_hook(data)
-
-    def _postcmd_hook(self, data: cmd2.plugin.PostcommandData) -> cmd2.plugin.PostcommandData:
-        return self.cmdwrapper_hook(data)
-
     def _commands_completion_hook(self, data: cmd2.plugin.PrecommandData) -> cmd2.plugin.PrecommandData:
         self._command = data.statement.command
         args = " " + data.statement.args
