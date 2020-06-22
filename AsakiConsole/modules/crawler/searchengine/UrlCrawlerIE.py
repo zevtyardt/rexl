@@ -32,67 +32,67 @@ class UrlCrawler:
                 self.poutput(url)
 
     @with_argparser(BaseParser)
-    def do_aol__crawler__url(self, params):
+    def do_aol__Scrapper__SearchEngine(self, params):
         """url: https://search.aol.com/"""
         aol = AolSearch()
         self.wrapper(aol, params)
 
     @with_argparser(BaseParser)
-    def do_ask__crawler__url(self, params):
+    def do_ask__Scrapper__SearchEngine(self, params):
         """url: https://www.ask.com"""
         ask = AskSearch()
         self.wrapper(ask, params)
 
     @with_argparser(BaseParser)
-    def do_baidu__crawler__url(self, params):
+    def do_baidu__Scrapper__SearchEngine(self, params):
         """url: https://www.baidu.com"""
         baidu = BaiduSearch()
         self.wrapper(baidu, params)
 
     @with_argparser(BaseParser)
-    def do_bing__crawler__url(self, params):
+    def do_bing__Scrapper__SearchEngine(self, params):
         """url: https://www.bing.com"""
         bing = BingSearch()
         self.wrapper(bing, params)
 
     @with_argparser(BaseParser)
-    def do_stackoverflow__crawler__url(self, params):
+    def do_stackoverflow__Scrapper__SearchEngine(self, params):
         """url: https://stackoverflow.com"""
         stackoverflow = StackoverflowSearch()
         self.wrapper(stackoverflow, params)
 
     @with_argparser(BaseParser)
-    def do_yahoo__crawler__url(self, params):
+    def do_yahoo__Scrapper__SearchEngine(self, params):
         """url: https://search.yahoo.com"""
         yahoo = YahooSearch()
         self.wrapper(yahoo, params)
 
     @with_argparser(BaseParser)
-    def do_yandex__crawler__url(self, params):
+    def do_yandex__Scrapper__SearchEngine(self, params):
         """url: https://yandex.com"""
         yandex = YandexSearch()
         self.wrapper(yandex, params)
 
     @with_argparser(BaseParser)
-    def do_youtube__crawler__url(self, params):
+    def do_youtube__Scrapper__SearchEngine(self, params):
         """url: https://youtube.com"""
         youtube = YoutubeSearch()
         self.wrapper(youtube, params)
 
     @with_argparser(BaseParser)
-    def do_google__crawler__url(self, params):
+    def do_google__Scrapper__SearchEngine(self, params):
         """url: https://www.google.com"""
         google = GoogleSearch()
         self.wrapper(google, params)
 
     @with_argparser(BaseParser)
-    def do_startpage__crawler__url(self, params):
+    def do_startpage__Scrapper__SearchEngine(self, params):
         """url: https://www.startpage.com"""
         startpage = StartpageSearch()
         self.wrapper(startpage, params)
 
     @with_argparser(BaseParser)
-    def do_ecosia__crawler__url(self, params):
+    def do_ecosia__Scrapper__SearchEngine(self, params):
         """url: https://www.ecosia.org"""
         ecosia = EcosiaSearch()
         self.wrapper(ecosia, params)

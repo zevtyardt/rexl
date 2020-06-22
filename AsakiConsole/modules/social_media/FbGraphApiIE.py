@@ -6,7 +6,7 @@ from typing import Union
 import textwrap
 import requests
 
-FACEBOOK = [("social_media", "fbgraph")]
+FACEBOOK = [("SocialMedia", "FbGraphApi")]
 GRAPH_API = "https://graph.facebook.com"
 GRAPH_API_VERSION = "v6.0"
 
@@ -141,13 +141,13 @@ class FacebookGraph(FbGraphApi):
 
     @validate_facebook_access_token
     @with_argparser(SingleObjectParser)
-    def do_like__social_media__fbgraph(self, param):
+    def do_like__SocialMedia__FbGraphApi(self, param):
         """like post, albums or :object:"""
         self._fbgraph_api(param.object_id, "likes", method="POST")
 
     @validate_facebook_access_token
     @with_argparser(SingleReactPostParser)
-    def do_reaction__social_media__fbgraph(self, param):
+    def do_reaction__SocialMedia__FbGraphApi(self, param):
         """send reaction to :object:"""
         self._fbgraph_api(
             param.object_id, "reactions", method="POST", type=param.type
@@ -155,7 +155,7 @@ class FacebookGraph(FbGraphApi):
 
     @validate_facebook_access_token
     @with_argparser(CommentPostParser)
-    def do_comment__social_media__fbgraph(self, param):
+    def do_comment__SocialMedia__FbGraphApi(self, param):
         """send comment to someone post"""
         self._fbgraph_api(
             param.post_id, "comments", method="POST", message=param.message
@@ -163,49 +163,49 @@ class FacebookGraph(FbGraphApi):
 
     @validate_facebook_access_token
     @with_argparser(UserParser)
-    def do_poke__social_media__fbgraph(self, param):
+    def do_poke__SocialMedia__FbGraphApi(self, param):
         """send poke to user"""
         self._fbgraph_api(param.uid, "pokes", method="POST")
 
     @validate_facebook_access_token
     @with_argparser(UserParser)
-    def do_block__social_media__fbgraph(self, param):
+    def do_block__SocialMedia__FbGraphApi(self, param):
         """block person, page or :object:"""
         self._fbgraph_api("me", "blocked", uid=param.uid)
 
     @validate_facebook_access_token
     @with_argparser(UserParser)
-    def do_unfollow__social_media__fbgraph(self, param):
+    def do_unfollow__SocialMedia__FbGraphApi(self, param):
         """unfollow person, page or :object:"""
         self._fbgraph_api(param.uid, "subscribers", method="DELETE")
 
     @validate_facebook_access_token
     @with_argparser(UserParser)
-    def do_follow__social_media__fbgraph(self, param):
+    def do_follow__SocialMedia__FbGraphApi(self, param):
         """follow person, page or :object:"""
         self._fbgraph_api(param.uid, "subscribers", method="POST")
 
     @validate_facebook_access_token
     @with_argparser(UserParser)
-    def do_confirm__social_media__fbgraph(self, param):
+    def do_confirm__SocialMedia__FbGraphApi(self, param):
         """add user to the friendlist"""
         self._fbgraph_api("me", "friends", param.uid, method="POST")
 
     @validate_facebook_access_token
     @with_argparser(UserParser)
-    def do_unfriend__social_media__fbgraph(self, param):
+    def do_unfriend__SocialMedia__FbGraphApi(self, param):
         """remove user from friendlist"""
         self._fbgraph_api("me", "friends", method="DELETE", uid=param.uid)
 
     @validate_facebook_access_token
     @with_argparser(SingleObjectParser)
-    def do_obj__social_media__fbgraph(self, param):
+    def do_obj__SocialMedia__FbGraphApi(self, param):
         """view object"""
         self._fbgraph_api(param.object_id, prettify=True)
 
     @validate_facebook_access_token
     @with_argparser(SingleObjectParser)
-    def do_delete__social_media__fbgraph(self, param):
+    def do_delete__SocialMedia__FbGraphApi(self, param):
         """remove :object:"""
         self._fbgraph_api(param.object_id, method="DELETE")
 
@@ -215,7 +215,7 @@ class FacebookGraph(FbGraphApi):
 
     @validate_facebook_access_token
     @with_argparser(BooleanParser)
-    def do_shield__social_media__fbgraph(self, param):
+    def do_shield__SocialMedia__FbGraphApi(self, param):
         """activate or delete profile guard"""
         token = self.facebook_user_access_token
         headers = {'Authorization': 'OAuth ' + token}

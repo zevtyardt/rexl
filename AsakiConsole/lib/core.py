@@ -38,7 +38,9 @@ class CustomCmd(cmd2.Cmd):
         self.__author__ = constants.AUTHOR_USERNAME
 
         self.register_preloop_hook(self._preloop_hook)
-        self.register_postparsing_hook(self._commands_completion_hook)
+        self.register_precmd_hook(self._commands_completion_hook)
+        self.register_precmd_hook(self._precmd_hook)
+        self.register_postcmd_hook(self._postcmd_hook)
 
         self._appname = constants.APP_NAME
         self.prompt = self._appname
@@ -168,7 +170,19 @@ class CustomCmd(cmd2.Cmd):
         return valid(command)
 
     # hooks
-    def _commands_completion_hook(self, data: cmd2.plugin.PostparsingData) -> cmd2.plugin.PostparsingData:
+    def cmdwrapper_hook(self, data):
+        real_command = data.statement.command.replace("_", "-")
+        if real_command not in self.g_commands and data.statement.args and not any(i in data.statement.args for i in ("-h", "--help")):
+            self.poutput()
+        return data
+
+    def _precmd_hook(self, data: cmd2.plugin.PrecommandData) -> cmd2.plugin.PrecommandData:
+        return self.cmdwrapper_hook(data)
+
+    def _postcmd_hook(self, data: cmd2.plugin.PostcommandData) -> cmd2.plugin.PostcommandData:
+        return self.cmdwrapper_hook(data)
+
+    def _commands_completion_hook(self, data: cmd2.plugin.PrecommandData) -> cmd2.plugin.PrecommandData:
         self._command = data.statement.command
         args = " " + data.statement.args
         new_command = self._convert_to_valid_command(self._command)
@@ -239,10 +253,10 @@ class CustomCmd(cmd2.Cmd):
             self.perror("<empty>")
         else:
             alias = list(self.modules.keys())
-            self.poutput(tabulate.tabulate(
+            self.poutput("\n" + tabulate.tabulate(
                 [alias[i:i+3] for i in range(0, len(alias), 3)],
                 tablefmt="plain"
-            ))
+            ) + "\n")
 
     UseParser = argparse.ArgumentParser(usage="use [-h] [-i] [module]")
     UseParser.add_argument("module", nargs="*", help="specific module to use")
@@ -254,13 +268,13 @@ class CustomCmd(cmd2.Cmd):
         """Use a spesific module"""
         if not self.modules:
             self.perror("<empty>")
-            return
+            return 0
 
         module_name = None
         if params.interactive:
             self.poutput()
             questions = [
-                inquirer.List("module_name", message="select module",
+                inquirer.List("module_name", message="module selected",
                               choices=sorted(self.modules.keys()))
             ]
             module_name = inquirer.prompt(questions)["module_name"]
@@ -280,8 +294,7 @@ class CustomCmd(cmd2.Cmd):
     def complete_use(self, chars, raw, *args) -> list:
         """auto complete for 'use'"""
         raw_s = raw.strip().split()
-        list_modules = [i for i in self.modules.keys(
-        ) if i.startswith(chars) or chars == ""]
+        list_modules = [i for i in self.modules.keys() if i.startswith(chars) or chars == ""]
 
         if len(raw_s) > 1 and raw_s[-1] in self.modules.keys() and \
                 not any(i[len(chars)] == self.module_delimeter for i in list_modules):
@@ -317,7 +330,7 @@ class CustomCmd(cmd2.Cmd):
             prefix = " " * indent
             self.poutput(title)
             self.poutput("-" * len(title))
-        self.poutput("")
+        self.poutput()
         for alias, command in data:
             self.poutput(prefix + self._cmdfmt.format(alias.replace("_", "-"),
                                                       self.get_doc(command, prefix))

@@ -363,7 +363,7 @@ class ZoneH(object):
     ZoneHParser = make_parser()
 
     @with_argparser(ZoneHParser)
-    def do_zone_h__crawler(self, args):
+    def do_zone_h__Scrapper(self, args):
         """powerfull zone-h scrapper and auto reverse ip"""
         cookies = {"PHPSESSID": args.phpsessid}
         if args.verbose:

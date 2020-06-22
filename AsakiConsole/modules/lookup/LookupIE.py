@@ -10,7 +10,7 @@ class Lookup(HackerTargetApi):
     MacParser.add_argument("mac", metavar="mac address", help="mac address")
 
     @with_argparser(MacParser)
-    def do_mac_lookup__lookup(self, params):
+    def do_mac_lookup__Lookup(self, params):
         """Finds information about a Particular Mac address"""
         resp = requests.get(f"http://macvendors.co/api/{params.mac}").json()
         self.poutput(json.dumps(resp, indent=2))

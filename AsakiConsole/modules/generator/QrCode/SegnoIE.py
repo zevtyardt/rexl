@@ -235,7 +235,7 @@ class Segno(object):
     SegnoParser = make_parser()
 
     @with_argparser(SegnoParser)
-    def do_segno__generator(self, statement):
+    def do_segno__Generator(self, statement):
         """Segno QR Code and Micro QR Code generator"""
         config = build_config(statement.__dict__)
         try:

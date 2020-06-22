@@ -3,14 +3,21 @@ import threading
 import sys
 
 run = True
+vars = []
 def loading():
     import itertools
     import time
 
-    chars = itertools.cycle(r"\|/-")
+    chars = itertools.cycle([
+      "....", "...", "..", ".", "..", "..."
+    ])
     while run:
+        if vars:
+            message = f"{vars[-1]} loaded"
+        else:
+            message = f"Prepairing"
         sys.stdout.write(
-            f"\x1b[K[{next(chars)}] starting {APP_NAME} framework at {time.strftime('%c')}\r")
+            f"\x1b[K  {message} {next(chars)}\r")
         time.sleep(0.2)
     sys.stdout.write("\x1b[K")
 
@@ -33,7 +40,6 @@ use the 'help' command to display the menu.
 '''
 
 rilpath = sys.path[0]
-vars = []
 for path, dirs, files in os.walk(os.path.join(rilpath, "modules")):
     for file in files:
         if not file.endswith(".py") or file.startswith("__"):
