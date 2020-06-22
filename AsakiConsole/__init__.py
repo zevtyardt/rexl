@@ -2,9 +2,9 @@ import sys
 import os
 
 sys.path.insert(0, os.path.dirname(__file__))
-from lib.loader import MainModule, awesome_intro
+from lib.lazy_loader import Loader, awesome_intro
 
-class Asaki(MainModule):
+class Asaki(Loader):
     def __init__(self):
         super().__init__()
         self.prompt = "sk"

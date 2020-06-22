@@ -197,8 +197,8 @@ class CustomCmd(cmd2.Cmd):
             if msf_style:
                 s_module = self.current_module.split(self.module_delimeter, 1)
                 if len(s_module) == 1:
-                    s_module.insert(0, "default")
-                new_prompt += f"{s_module[0]}({self.style(s_module[0], fg=self.fg.bright_red)})"
+                    s_module.insert(0, "others")
+                new_prompt += f"{s_module[0]}({self.style(s_module[1], fg=self.fg.bright_red)})"
             else:
                 new_prompt += self.style(self.current_module,
                                          fg=self.fg.bright_green)
@@ -261,7 +261,7 @@ class CustomCmd(cmd2.Cmd):
             self.poutput()
             questions = [
                 inquirer.List("module_name", message="select module",
-                              choices=self.modules.keys())
+                              choices=sorted(self.modules.keys()))
             ]
             module_name = inquirer.prompt(questions)["module_name"]
         elif params.module:

@@ -88,7 +88,7 @@ def with_argparser(parser: argparse.ArgumentParser, *,
 
         # set formatter class
         parser.formatter_class = lambda prog: argparse.ArgumentDefaultsHelpFormatter(
-            prog, max_help_position=70)
+            prog, max_help_position=50)
 
         # Set the command's help text as argparser.description (which can be None)
         cmd_wrapper.__doc__ = parser.description

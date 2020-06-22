@@ -11,7 +11,7 @@ GRAPH_API = "https://graph.facebook.com"
 GRAPH_API_VERSION = "v6.0"
 
 
-class FbGraphAPI(object):
+class FbGraphApi(object):
     def make_request(self, *args, **kwargs):
         return requests.get(*args, **kwargs)
 
@@ -117,7 +117,7 @@ class FbGraphAPI(object):
         return data_dict
 
 
-class FacebookGraph(FbGraphAPI):
+class FacebookGraph(FbGraphApi):
     # ARGUMENT PARSER
     # ~~~~~~~~~~~~~~~
 
