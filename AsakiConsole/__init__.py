@@ -21,4 +21,4 @@ def main():
     flow.cmdloop()
 
 if __name__ == "__main__":
-    main()
+    x = main()

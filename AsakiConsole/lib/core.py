@@ -66,7 +66,7 @@ class CustomCmd(cmd2.Cmd):
         self.reset_module()
 
         self._cmdfmt = self._custom_help_format()
-        self._command = ""
+        self._command = None
 
     @property
     def get_terminal_size(self) -> os.terminal_size:
@@ -94,7 +94,7 @@ class CustomCmd(cmd2.Cmd):
                     key += (self.module_delimeter + subcategory)
                 if not self.modules.get(key):
                     self.modules[key] = []
-                if key.startswith("auxilary"):
+                if key.lower().startswith("auxilary"):
                     self._auxilary.add(raw)
                 res_data = (data.command, raw)
                 location_to = self.modules[key]
@@ -215,6 +215,10 @@ class CustomCmd(cmd2.Cmd):
 
         :param statement: Statement object with parsed input
         """
+        if self._command is None:
+            super().default(statement)
+            return 0
+
         if self.default_to_shell:
             if 'shell' not in self.exclude_from_history:
                 self.history.append(statement)

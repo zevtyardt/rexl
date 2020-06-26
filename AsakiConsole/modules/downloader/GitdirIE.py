@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-from lib.decorators import with_argparser
+from lib.decorators import with_argparser, use_for
 import re
 import os
 import urllib.request
@@ -168,8 +168,9 @@ class Gitdir(object):
                         help='Flatten directory structures. Do not create extra directory and download found files to'
                              ' output directory. (default to current directory if not specified)')
 
+    @use_for("Downloader")
     @with_argparser(parser)
-    def do_gitdir__Downloader(self, args):
+    def do_gitdir(self, args):
         """Download a single directory/folder from a GitHub repo"""
         flatten = args.flatten
         total_files = 0
