@@ -18,19 +18,20 @@ from colorama.ansi import clear_screen
 
 try:
     from . import constants
-except ModuleNotFound:
+except ImportError:
     class constants:
         APP_NAME = "default"
         APP_VERSION = "0.0.0"
         AUTHOR_USERNAME = "zevtyardt"
 
 class CustomCmd(cmd2.Cmd):
-    def __init__(self, msf_style: bool = False):
+    def __init__(self, msf_style: bool = False, prompt_suffix: str = ">"):
         super().__init__()
         self.default_error = "{!r} is not a recognized command!"
         self.style = style
         self.fg = fg
 
+        self.prompt_suffix = prompt_suffix
         self.msf_style = msf_style
         self.module_delimeter = "." if not msf_style else "/"
 
@@ -55,9 +56,10 @@ class CustomCmd(cmd2.Cmd):
         ])
 
         self.modules = {}
+
+        self.total = argparse.Namespace(commands=0, modules=0, submodules=set(), auxilaries=set())
+
         self.g_commands = []
-        self._total_commands = 0
-        self._auxilary = set()
 
         self._category_pattern = re.compile(
             r"^(?P<command>.+?)__(?P<category>.+?)(?:__(?P<subcategory>.+?))?$")
@@ -89,24 +91,25 @@ class CustomCmd(cmd2.Cmd):
                 key = data.category
                 subcategory = data.subcategory
                 if subcategory:
+                    self.total.submodules.add(subcategory)
                     subcategory = self.module_delimeter.join(
                         subcategory.split("__"))
                     key += (self.module_delimeter + subcategory)
                 if not self.modules.get(key):
                     self.modules[key] = []
                 if key.lower().startswith("auxilary"):
-                    self._auxilary.add(raw)
+                    self.total.auxilaries.add(raw)
                 res_data = (data.command, raw)
                 location_to = self.modules[key]
                 if res_data not in location_to:
                     update_max_lenght(res_data[0])
                     location_to.append(res_data)
-                    self._total_commands += 1
+                    self.total.commands += 1
             elif not recmd and raw not in self.hidden_commands:
                 update_max_lenght(raw)
                 if not hasattr(cmd_func, "_USE_FOR"):
                     self.g_commands.append(raw)
-                self._total_commands += 1
+                self.total.commands += 1
             if hasattr(cmd_func, "_USE_FOR"):
                 for module in cmd_func._USE_FOR:
                     module = self.module_delimeter.join(module)
@@ -114,8 +117,10 @@ class CustomCmd(cmd2.Cmd):
                         self.modules[module] = []
                     self.modules[module].insert(
                         0, (raw if not recmd else data.command, raw))
-        self._auxilary = len(self._auxilary)
         self._max_lenght += 4
+        self.total.modules = len(set(i.split(self.module_delimeter)[0] for i in self.modules))
+        self.total.submodules = len(self.total.submodules)
+        self.total.auxilaries = len(self.total.auxilaries)
 
     def reset_module(self) -> None:
         for module, items in self.modules.items():
@@ -181,12 +186,11 @@ class CustomCmd(cmd2.Cmd):
         self.orig_prompt = self.prompt
         self.update_prompt()
 
-    def update_prompt(self, prefix: str = "", suffix: str = ":", sorted: bool = False, msf_style: bool = False) -> None:
+    def update_prompt(self, prefix: str = "", prompt_suffix: str = ">", sorted: bool = False, msf_style: bool = False) -> None:
         self.poutput()
         new_prompt = "%s%s" % (prefix, self.style(
             self.orig_prompt, underline=True))
         if self.current_module != self._appname:
-            new_prompt += " "
             if sorted:
                 s_module = self.current_module.split(self.module_delimeter)
                 module_name = self.module_delimeter.join(
@@ -200,10 +204,11 @@ class CustomCmd(cmd2.Cmd):
                     s_module.insert(0, "others")
                 new_prompt += f"{s_module[0]}({self.style(s_module[1], fg=self.fg.bright_red)})"
             else:
+                new_prompt += " "
                 new_prompt += self.style(self.current_module,
                                          fg=self.fg.bright_green)
 
-        new_prompt += "%s " % suffix
+        new_prompt += " %s " % prompt_suffix
         self.async_update_prompt(new_prompt)
 
     def pinfo(self, msg: str = "", **kwargs) -> None:
@@ -277,7 +282,7 @@ class CustomCmd(cmd2.Cmd):
             if self.modules.get(module_name):
                 self.current_module = module_name
                 self.use_module(module_name)
-                self.update_prompt(prefix="\r", msf_style=self.msf_style)
+                self.update_prompt(prefix="\r", msf_style=self.msf_style, prompt_suffix=self.prompt_suffix)
             else:
                 self.poutput("%s is not a recognized module!" % module_name)
 

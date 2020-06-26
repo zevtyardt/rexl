@@ -7,10 +7,9 @@ from lib.lazy_loader import Loader, awesome_intro
 class Asaki(Loader):
     def __init__(self):
         super().__init__()
-        self.prompt = "sk"
-        self.intro = awesome_intro.format(
-            len(self.modules), self._total_commands, self._auxilary
-        )
+        self.prompt = f"asaki@console"
+        self.intro = awesome_intro.format(self.total)
+
         self._add_settable("facebook_user_access_token",
                            str, "Facebook user access token.")
 

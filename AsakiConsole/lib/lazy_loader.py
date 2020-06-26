@@ -1,12 +1,12 @@
-from lib.constants import APP_VERSION, APP_NAME, AUTHOR_USERNAME
+from lib.constants import APP_VERSION, APP_NAME
 import threading
 import sys
+import time
 
 run = True
 vars = []
 def loading():
     import itertools
-    import time
 
     chars = itertools.cycle([
       "....", "...", "..", ".", "..", "..."
@@ -30,15 +30,6 @@ import os
 import re
 import importlib
 
-separator = '-' * 40
-awesome_intro = f'''{APP_NAME} framework {APP_VERSION} {AUTHOR_USERNAME}
-
-{separator}
-{{}} modules loaded. in total there are {{}} commands and {{}} auxilaries.
-use the 'help' command to display the menu.
-{separator}
-'''
-
 rilpath = sys.path[0]
 for path, dirs, files in os.walk(os.path.join(rilpath, "modules")):
     for file in files:
@@ -61,6 +52,15 @@ class Loader(CustomCmd, {", ".join(vars)}):
 
 run = False
 th.join()
+
+separator = '-' * 40
+awesome_intro = f'''{APP_NAME} framework {APP_VERSION}
+
+{separator}
+{{0.modules}} modules loaded. in total there are {{0.commands}} commands and {{0.auxilaries}} auxilaries.
+use the 'help' command to display the menu.
+{separator}
+'''
 
 del loading
 del th
