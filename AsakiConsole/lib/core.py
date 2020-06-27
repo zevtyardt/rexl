@@ -47,6 +47,8 @@ class CustomCmd(cmd2.Cmd):
         self.current_module = self._appname
 
         del cmd2.Cmd.do_py
+        del cmd2.Cmd.do_alias
+        del cmd2.Cmd.do_edit
         del cmd2.Cmd.do_run_pyscript
         del cmd2.Cmd.do_run_script
         del cmd2.Cmd.do__relative_run_script
@@ -56,10 +58,10 @@ class CustomCmd(cmd2.Cmd):
         ])
 
         self.modules = {}
-
         self.total = argparse.Namespace(commands=0, modules=0, submodules=set(), auxilaries=set())
-
         self.g_commands = []
+        self._alias_commands = {}
+        self._revalias_commands = {}
 
         self._category_pattern = re.compile(
             r"^(?P<command>.+?)__(?P<category>.+?)(?:__(?P<subcategory>.+?))?$")
@@ -87,7 +89,6 @@ class CustomCmd(cmd2.Cmd):
             cmd_func = self.cmd_func(raw)
             if recmd is not None:
                 data = ns(**recmd.groupdict())
-
                 key = data.category
                 subcategory = data.subcategory
                 if subcategory:
@@ -106,21 +107,28 @@ class CustomCmd(cmd2.Cmd):
                     location_to.append(res_data)
                     self.total.commands += 1
             elif not recmd and raw not in self.hidden_commands:
+                alias = raw
                 update_max_lenght(raw)
-                if not hasattr(cmd_func, "_USE_FOR"):
-                    self.g_commands.append(raw)
+                if not hasattr(cmd_func, constants.USE_FOR):
+                    self.g_commands.append(alias)
                 self.total.commands += 1
-            if hasattr(cmd_func, "_USE_FOR"):
+            if hasattr(cmd_func, constants.USE_FOR):
                 for module in cmd_func._USE_FOR:
                     module = self.module_delimeter.join(module)
                     if not self.modules.get(module):
                         self.modules[module] = []
                     self.modules[module].insert(
                         0, (raw if not recmd else data.command, raw))
+            if hasattr(cmd_func, constants.ALIASES):
+                alias = cmd_func._ALIASES
+                update_max_lenght(alias)
+                self._alias_commands[raw if not recmd else data.command] = alias
+
         self._max_lenght += 4
         self.total.modules = len(set(i.split(self.module_delimeter)[0] for i in self.modules))
         self.total.submodules = len(self.total.submodules)
         self.total.auxilaries = len(self.total.auxilaries)
+        self._revalias_commands = dict([v, k] for k, v in self._alias_commands.items())
 
     def reset_module(self) -> None:
         for module, items in self.modules.items():
@@ -153,8 +161,10 @@ class CustomCmd(cmd2.Cmd):
 
     def get_visible_commands(self) -> list:
         def todisplay_command(raw):
-            def invalid(x, force=False): return x.replace(
-                "_", "-") if x in self.g_commands or force else x
+            def invalid(x, force=False):
+                if (real_command := self._alias_commands.get(x)):
+                     return real_command
+                return x.replace("_", "-") if x in self.g_commands or force else x
             cmd = self._category_pattern.search(raw)
             if self.current_module != self._appname:
                 return invalid(cmd.group(1) if cmd else raw, force=True)
@@ -174,7 +184,11 @@ class CustomCmd(cmd2.Cmd):
 
     # hooks
     def _commands_completion_hook(self, data: cmd2.plugin.PrecommandData) -> cmd2.plugin.PrecommandData:
-        self._command = data.statement.command
+        command = data.statement.command
+        # reverse
+        if (real_command := self._revalias_commands.get(command)):
+            command = real_command
+        self._command = command
         args = " " + data.statement.args
         new_command = self._convert_to_valid_command(self._command)
         data.statement = self.statement_parser.parse(new_command + args)
@@ -309,7 +323,7 @@ class CustomCmd(cmd2.Cmd):
     def do_help(self, *args) -> None:
         """print this help message"""
         self.poutput()
-        self._print_topics((i, i) for i in self.g_commands)
+        self._print_topics((cmd, cmd) for cmd in self.g_commands)
         if self.current_module != self._appname:
             data = self.modules[self.current_module]
             self._print_topics(data, title=self.current_module)
@@ -327,8 +341,9 @@ class CustomCmd(cmd2.Cmd):
             self.poutput("-" * len(title))
         self.poutput()
         for alias, command in data:
-            self.poutput(prefix + self._cmdfmt.format(alias.replace("_", "-"),
-                                                      self.get_doc(command, prefix))
+            self.poutput(prefix + self._cmdfmt.format(
+                         self._alias_commands.get(alias, alias.replace("_", "-")),
+                         self.get_doc(command, prefix))
                          )
         self.poutput()
 

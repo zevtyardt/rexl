@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-from lib.decorators import with_argparser, use_for
+from lib.decorators import with_argparser
 import re
 import os
 import urllib.request
@@ -101,23 +101,27 @@ def download(repo_url, flatten=False, output_dir="./"):
 
         # If the data is a file, download it as one.
         if isinstance(data, dict) and data["type"] == "file":
-            try:
-                # download the file
-                opener = urllib.request.build_opener()
-                opener.addheaders = [('User-agent', 'Mozilla/5.0')]
-                urllib.request.install_opener(opener)
-                urllib.request.urlretrieve(
-                    data["download_url"], os.path.join(dir_out, data["name"]))
-                # bring the cursor to the beginning, erase the current line, and dont make a new line
-                print_text("Downloaded: " + Fore.WHITE +
-                           "{}/{}".format(download_dirs, data["name"]), "green", in_place=True)
+            if os.path.isfile(f"{download_dirs}/{data['name']}"):
+                print_text(
+                    f"{Fore.YELLOW}Skipped: {Fore.WHITE}{download_dirs}/{data['name']} already downloaded")
+            else:
+                try:
+                    # download the file
+                    opener = urllib.request.build_opener()
+                    opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+                    urllib.request.install_opener(opener)
+                    urllib.request.urlretrieve(
+                        data["download_url"], os.path.join(dir_out, data["name"]))
+                    # bring the cursor to the beginning, erase the current line, and dont make a new line
+                    print_text("Downloaded: " + Fore.WHITE +
+                               "{}/{}".format(download_dirs, data["name"]), "green", in_place=True)
 
-                return total_files
-            except KeyboardInterrupt:
-                # when CTRL+C is pressed during the execution of this script,
-                # bring the cursor to the beginning, erase the current line, and dont make a new line
-                print_text("✘ Got interrupted", 'red', in_place=False)
-                return 0
+                    return total_files
+                except KeyboardInterrupt:
+                    # when CTRL+C is pressed during the execution of this script,
+                    # bring the cursor to the beginning, erase the current line, and dont make a new line
+                    print_text("✘ Got interrupted", 'red', in_place=False)
+                    return 0
 
         for file in data:
             file_url = file["download_url"]
@@ -135,22 +139,26 @@ def download(repo_url, flatten=False, output_dir="./"):
                 pass
 
             if file_url is not None:
-                try:
-                    opener = urllib.request.build_opener()
-                    opener.addheaders = [('User-agent', 'Mozilla/5.0')]
-                    urllib.request.install_opener(opener)
-                    # download the file
-                    urllib.request.urlretrieve(file_url, path)
+                if os.path.isfile(f"{download_dirs}/{file_name}"):
+                    print_text(
+                        f"{Fore.YELLOW}Skipped: {Fore.WHITE}{download_dirs}/{file_name} already downloaded")
+                else:
+                    try:
+                        opener = urllib.request.build_opener()
+                        opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+                        urllib.request.install_opener(opener)
+                        # download the file
+                        urllib.request.urlretrieve(file_url, path)
 
-                    # bring the cursor to the beginning, erase the current line, and dont make a new line
-                    print_text("Downloaded: " + Fore.WHITE +
-                           "{}/{}".format(download_dirs, file_name), "green", in_place=True)
+                        # bring the cursor to the beginning, erase the current line, and dont make a new line
+                        print_text("Downloaded: " + Fore.WHITE +
+                                   "{}/{}".format(download_dirs, file_name), "green", in_place=True)
 
-                except KeyboardInterrupt:
-                    # when CTRL+C is pressed during the execution of this script,
-                    # bring the cursor to the beginning, erase the current line, and dont make a new line
-                    print_text("Got interrupted", 'red', in_place=False)
-                    sys.exit()
+                    except KeyboardInterrupt:
+                        # when CTRL+C is pressed during the execution of this script,
+                        # bring the cursor to the beginning, erase the current line, and dont make a new line
+                        print_text("Got interrupted", 'red', in_place=False)
+                        return 0
             else:
                 download(file["html_url"], flatten, dir_out)
 
@@ -168,13 +176,17 @@ class Gitdir(object):
                         help='Flatten directory structures. Do not create extra directory and download found files to'
                              ' output directory. (default to current directory if not specified)')
 
-    @use_for("Downloader")
-    @with_argparser(parser)
-    def do_gitdir(self, args):
-        """Download a single directory/folder from a GitHub repo"""
+    def download_git_directory(self, args):
+        if isinstance(args, str):
+            args = self.parser.parse_args([args])
         flatten = args.flatten
         total_files = 0
         for url in args.urls:
             total_files = download(url, flatten, args.output_dir)
         if total_files:
             print_text("Download complete", "green", in_place=True)
+
+    @with_argparser(parser)
+    def do_gitdir__Downloader(self, args):
+        """Download a single directory/folder from a GitHub repo"""
+        self.download_git_directory(args)

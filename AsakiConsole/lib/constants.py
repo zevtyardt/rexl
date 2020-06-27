@@ -8,3 +8,4 @@ AUTHOR_SOCIAL_FACEBOOK = "https://www.facebook.com/zvtyrdt.id"
 
 # variable
 USE_FOR = "_USE_FOR"
+ALIASES = "_ALIASES"

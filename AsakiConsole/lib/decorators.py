@@ -26,6 +26,13 @@ def use_for(modules: Union[list, tuple, set]) -> Callable:
         return func
     return wrap
 
+def make_alias(aliases: str) -> Callable:
+    from .constants import ALIASES
+    def wrap(func: Callable) -> Callable:
+        setattr(func, ALIASES, aliases.replace(" ", "_"))
+        return func
+    return wrap
+
 def with_argparser(parser: argparse.ArgumentParser, *,
                    ns_provider: Optional[Callable[..., argparse.Namespace]] = None,
                    preserve_quotes: bool = False) -> Callable[[argparse.Namespace], Optional[bool]]:
