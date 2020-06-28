@@ -215,7 +215,7 @@ class CustomCmd(cmd2.Cmd):
             if msf_style:
                 s_module = self.current_module.split(self.module_delimeter, 1)
                 if len(s_module) == 1:
-                    s_module.insert(0, "others")
+                    s_module.insert(0, "module")
                 new_prompt += f"{s_module[0]}({self.style(s_module[1], fg=self.fg.bright_red)})"
             else:
                 new_prompt += " "
@@ -251,21 +251,19 @@ class CustomCmd(cmd2.Cmd):
             self.perror(err_msg, apply_style=False)
 
     # additional commands
-    def do_clear_screen(self, *param) -> None:
+    def do_clear_screen(self, param) -> None:
         """clear terminal screen"""
         self.poutput(clear_screen())
         self.poutput(self.intro)
 
-    def do_list_modules(self, *param) -> None:
+    def do_list_modules(self, params) -> None:
         """List available module"""
         if not self.modules:
             self.perror("<empty>")
         else:
-            alias = list(self.modules.keys())
-            self.poutput("\n" + tabulate.tabulate(
-                [alias[i:i+3] for i in range(0, len(alias), 3)],
-                tablefmt="plain"
-            ) + "\n")
+            width = self.get_terminal_size.columns
+            self.columnize(sorted(self.modules.keys()),
+                           displaywidth=width if width < 150 else 150)
 
     UseParser = argparse.ArgumentParser(usage="use [-h] [-i] [module]")
     UseParser.add_argument("module", nargs="*", help="specific module to use")
@@ -348,14 +346,18 @@ class CustomCmd(cmd2.Cmd):
         self.poutput()
 
     def get_doc(self, cmd: str, prefix: str):
+        def capitalize(text):
+            if len(text) > 1:
+                return text[0].upper() + text[1:]
+            return text
         max_lenght = self.get_terminal_size.columns - self._max_lenght - 4
         cmd_func = self.cmd_func(cmd)
         doc = cmd_func.__doc__
 
         if not doc:
-            return self.style("<undocumented command>", fg=self.fg.yellow)
+            return ""
         doc = re.sub(r"\n\s+", "\n", doc.strip())
-        docs = textwrap.wrap(doc.capitalize(), max_lenght)
+        docs = textwrap.wrap(capitalize(doc), max_lenght)
         rawtext = [docs[0]]
         for raw in docs[1:]:
             rawtext.append(prefix + self._cmdfmt.format("", raw))

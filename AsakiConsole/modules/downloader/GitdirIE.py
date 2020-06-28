@@ -103,7 +103,7 @@ def download(repo_url, flatten=False, output_dir="./"):
         if isinstance(data, dict) and data["type"] == "file":
             if os.path.isfile(f"{download_dirs}/{data['name']}"):
                 print_text(
-                    f"{Fore.YELLOW}Skipped: {Fore.WHITE}{download_dirs}/{data['name']} already downloaded")
+                    f"{Fore.YELLOW}Skipped: {Fore.WHITE}{download_dirs}/{data['name']} already downloaded", in_place=True)
             else:
                 try:
                     # download the file
@@ -141,7 +141,7 @@ def download(repo_url, flatten=False, output_dir="./"):
             if file_url is not None:
                 if os.path.isfile(f"{download_dirs}/{file_name}"):
                     print_text(
-                        f"{Fore.YELLOW}Skipped: {Fore.WHITE}{download_dirs}/{file_name} already downloaded")
+                        f"{Fore.YELLOW}Skipped: {Fore.WHITE}{download_dirs}/{file_name} already downloaded", in_place=True)
                 else:
                     try:
                         opener = urllib.request.build_opener()
