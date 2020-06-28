@@ -13,9 +13,10 @@ def loading():
     ])
     while run:
         if vars:
-            message = f"{vars[-1]} loaded"
+            klass = globals().get(vars[-1])
+            message = f"{klass.__module__} loaded"
         else:
-            message = f"Prepairing"
+            message = f"Initializing"
         sys.stdout.write(
             f"\x1b[K  {message} {next(chars)}\r")
         time.sleep(0.2)
