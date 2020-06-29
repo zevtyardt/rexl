@@ -261,9 +261,11 @@ class CustomCmd(cmd2.Cmd):
         if not self.modules:
             self.perror("<empty>")
         else:
+            self.poutput()
             width = self.get_terminal_size.columns
             self.columnize(sorted(self.modules.keys()),
                            displaywidth=width if width < 150 else 150)
+            self.poutput()
 
     UseParser = argparse.ArgumentParser(usage="use [-h] [-i] [module]")
     UseParser.add_argument("module", nargs="*", help="specific module to use")
