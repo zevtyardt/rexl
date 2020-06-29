@@ -62,14 +62,17 @@ def lsremote(url):
 def update_framework():
     global msg
 
-    msg = "check the latest version"
-    repo = git.Repo(search_parent_directories=True)
-    current = repo.head.object.hexsha
-    if current != lsremote(project_url).get("HEAD", current):
-        msg = "updating framework"
-        repo.remotes.origin.pull()
-    else:
-        msg = "framework is the latest version"
+    try:
+        msg = "check the latest version"
+        repo = git.Repo(search_parent_directories=True)
+        current = repo.head.object.hexsha
+        if current != lsremote(project_url).get("HEAD", current):
+            msg = "updating framework"
+            repo.remotes.origin.pull()
+        else:
+            msg = "framework is the latest version"
+    except Exception:
+        msg = "skipped"
 
 
 update_framework()
