@@ -1,6 +1,6 @@
+gitpython
 requests
 cmd2
 inquirer
 youtube-dl
 tabulate
-gitpython
