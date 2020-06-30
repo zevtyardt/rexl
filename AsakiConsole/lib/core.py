@@ -27,7 +27,7 @@ except ImportError:
 class CustomCmd(cmd2.Cmd):
     def __init__(self, msf_style: bool = False, prompt_suffix: str = ">"):
         super().__init__()
-        self.default_error = "{!r} is not a recognized command!"
+        self.default_error = "{!s} is not a recognized command!"
         self.style = style
         self.fg = fg
 
@@ -39,10 +39,10 @@ class CustomCmd(cmd2.Cmd):
         self.__author__ = constants.AUTHOR_USERNAME
 
         self.register_preloop_hook(self._preloop_hook)
-        self.register_precmd_hook(self._commands_completion_hook)
 
         self._appname = constants.APP_NAME
         self.prompt = self._appname
+        self.orig_prompt = self.prompt
 
         self.current_module = self._appname
 
@@ -182,22 +182,22 @@ class CustomCmd(cmd2.Cmd):
                         return real_command
         return valid(command)
 
-    # hooks
-    def _commands_completion_hook(self, data: cmd2.plugin.PrecommandData) -> cmd2.plugin.PrecommandData:
-        command = data.statement.command
+    def parsing_precmd(self, statement: Union[Statement, str]) -> Statement:
+        if not isinstance(statement, Statement):
+            statement = self.statement_parser.parse(statement)
+        command = statement.command
         # reverse
         if (real_command := self._revalias_commands.get(command)):
             command = real_command
         self._command = command
-        args = " " + data.statement.args
+        args = " " + statement.args
         new_command = self._convert_to_valid_command(self._command)
-        data.statement = self.statement_parser.parse(new_command + args)
-        return data
+        statement = self.statement_parser.parse(new_command + args)
+        return statement
 
     def _preloop_hook(self) -> None:
         self.set_window_title(
             f"{self._appname} framework {self.__version__} - {self.__author__}")
-        self.orig_prompt = self.prompt
         self.update_prompt()
 
     def update_prompt(self, prefix: str = "", prompt_suffix: str = ">", sorted: bool = False, msf_style: bool = False) -> None:
@@ -225,9 +225,10 @@ class CustomCmd(cmd2.Cmd):
         new_prompt += " %s " % prompt_suffix
         self.async_update_prompt(new_prompt)
 
-    def pinfo(self, msg: str = "", **kwargs) -> None:
-        prefix = self.style("[+] ", fg=self.fg.green)
-        super().poutput(prefix + msg, **kwargs)
+    def onecmd(self, statement: Union[Statement, str], *, add_to_history: bool = True) -> bool:
+        """wrapper method for `onecmd` instance"""
+        new_statement = self.parsing_precmd(statement)
+        return super().onecmd(new_statement, add_to_history=add_to_history)
 
     def default(self, statement: Statement) -> Optional[bool]:
         """Executed when the command given isn't a recognized command implemented by a do_* method.
