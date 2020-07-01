@@ -7,13 +7,16 @@ import shutil
 import inquirer
 import os
 import argparse
+import threading
+import sys
+import logging
 
 from lib.decorators import with_argparser
 from cmd2 import style, fg
 from cmd2.utils import alphabetical_sort, Settable
 from cmd2.parsing import Statement
 from argparse import Namespace as ns
-from typing import Union, Optional
+from typing import Union, Optional, List
 from colorama.ansi import clear_screen
 
 try:
@@ -23,6 +26,49 @@ except ImportError:
         APP_NAME = "default"
         APP_VERSION = "0.0.0"
         AUTHOR_USERNAME = "zevtyardt"
+
+# copy from https://github.com/ScryEngineering/excepthook_logging_example
+def handle_unhandled_exception(exc_type, exc_value, exc_traceback, thread_identifier=''):
+    """Handler for unhandled exceptions that will write to the logs"""
+    if issubclass(exc_type, KeyboardInterrupt):
+        # call the default excepthook saved at __excepthook__
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+
+    if not thread_identifier:
+        logging.critical("Unhandled exception", exc_info=(
+            exc_type, exc_value, exc_traceback))
+    else:
+        logging.critical("Unhandled exception (on thread %s)", thread_identifier, exc_info=(
+            exc_type, exc_value, exc_traceback))
+
+
+sys.excepthook = handle_unhandled_exception
+
+
+def patch_threading_excepthook():
+    """Installs our exception handler into the threading modules Thread object
+    Inspired by https://bugs.python.org/issue1230540
+    """
+    old_init = threading.Thread.__init__
+
+    def new_init(self, *args, **kwargs):
+        old_init(self, *args, **kwargs)
+        old_run = self.run
+
+        def run_with_our_excepthook(*args, **kwargs):
+            try:
+                old_run(*args, **kwargs)
+            except (KeyboardInterrupt, SystemExit):
+                raise
+            except:
+                sys.excepthook(*sys.exc_info(),
+                               thread_identifier=threading.get_ident())
+        self.run = run_with_our_excepthook
+    threading.Thread.__init__ = new_init
+
+
+patch_threading_excepthook()
 
 class CustomCmd(cmd2.Cmd):
     def __init__(self, msf_style: bool = False, prompt_suffix: str = ">"):
@@ -182,13 +228,27 @@ class CustomCmd(cmd2.Cmd):
                         return real_command
         return valid(command)
 
+    def postloop(self) -> None:
+        self.poutput("\n\nBye..\n")
+
+    def expand(self, text: str, _list: List[str]) -> List:
+        try:
+            _text = re.sub(r"\*+", ".*?", text)
+            pattern = re.compile(f"^{_text}$")
+            return [i for i in _list if re.match(pattern, i)]
+        except Exception:
+            return [text]
+
     def parsing_precmd(self, statement: Union[Statement, str]) -> Statement:
         if not isinstance(statement, Statement):
             statement = self.statement_parser.parse(statement)
-        command = statement.command
+        command = " ".join(
+           self.expand(statement.command, self.get_visible_commands()) or [statement.command]
+        )
         # reverse
         if (real_command := self._revalias_commands.get(command)):
             command = real_command
+
         self._command = command
         args = " " + statement.args
         new_command = self._convert_to_valid_command(self._command)
@@ -268,7 +328,7 @@ class CustomCmd(cmd2.Cmd):
                            displaywidth=width if width < 150 else 150)
             self.poutput()
 
-    UseParser = argparse.ArgumentParser(usage="use [-h] [-i] [module]")
+    UseParser = argparse.ArgumentParser(usage="use [-h] [-i] module")
     UseParser.add_argument("module", nargs="*", help="specific module to use")
     UseParser.add_argument("-i", "--interactive",
                            action="store_true", help="run interactive mode")
@@ -289,7 +349,9 @@ class CustomCmd(cmd2.Cmd):
             ]
             module_name = inquirer.prompt(questions)["module_name"]
         elif params.module:
-            module_name = params.module[0]
+            module_name = " ".join(
+                self.expand(params.module[0], self.modules.keys()) or [params.module[0]]
+            )
         else:
             self.poutput(params.print_usage)
 
