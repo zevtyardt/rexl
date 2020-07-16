@@ -233,6 +233,7 @@ class CustomCmd(cmd2.Cmd):
 
     def expand(self, text: str, _list: List[str]) -> List:
         try:
+            assert text != "*"
             _text = re.sub(r"\*+", ".*?", text)
             pattern = re.compile(f"^{_text}$")
             return [i for i in _list if re.match(pattern, i)]

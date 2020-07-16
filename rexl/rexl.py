@@ -16,10 +16,9 @@ args = parser.parse_args()
 
 sys.path.insert(0, os.path.dirname(__file__))
 if args.update:
-    from lib import updater
-    updater.update()
+    from lib import update
+    update.update()
     sys.exit(1)
-
 
 from lib.lazy_loader import Loader, awesome_intro
 class Asaki(Loader):
@@ -40,8 +39,10 @@ def main():
                 flow.onecmd(command)
             except cmd2.exceptions.Cmd2ArgparseError:
                 pass
-    if args.keep_running or not args.commands:
-        flow.cmdloop()
+        if not args.keep_running:
+            flow.poutput("Exiting")
+            sys.exit(1)
+    flow.cmdloop()
 
 if __name__ == "__main__":
     main()

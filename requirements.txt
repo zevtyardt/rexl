@@ -4,3 +4,5 @@ cmd2
 inquirer
 youtube-dl
 tabulate
+segno
+bs4

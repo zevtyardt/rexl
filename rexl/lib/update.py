@@ -1,8 +1,8 @@
-
 import git
 import logging
+import sys
 
-logging.basicConfig(format="%(levelname)-7s - %(message)s", level=logging.DEBUG)
+logging.basicConfig(format="[%(levelname)s] - %(message)s", level=logging.DEBUG)
 project_url = "https://github.com/zevtyardt/asaki.git"
 
 def lsremote(url):
@@ -18,6 +18,8 @@ def lsremote(url):
 
 
 def update():
+    if sys.argv[0].endswith("rexl-console"):
+        sys.exit("[critical] - It looks like you installed rexl with a package manager, pip, setup.py or a tarball. Please use that to update.")
     try:
         logging.info("check the latest version")
         repo = git.Repo(search_parent_directories=True)
